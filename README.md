@@ -86,9 +86,9 @@ The question itself lives in [`train.py`](train.py) (`QUESTIONS`): change the in
 
 **SnapGuard-0.8B vs Llama Guard**, head to head on the same laptop:
 
-- 🎯 **2.0× the AUPRC of Llama Guard 3-1B** (0.757 vs 0.370), and **+0.21 over Llama Guard 2-8B**
-- ⚡ **7.9× faster than Llama Guard 2-8B**, 1.8× faster than Llama Guard 3-1B: **71 ms** per message
-- 🪶 **9× fewer parameters than Llama Guard 2-8B**, 1.7× fewer than Llama Guard 3-1B
+- **2.0× the AUPRC of Llama Guard 3-1B** (0.757 vs 0.370), and **+0.21 over Llama Guard 2-8B**
+- **7.9× faster than Llama Guard 2-8B**, 1.8× faster than Llama Guard 3-1B: **71 ms** per message
+- **9× fewer parameters than Llama Guard 2-8B**, 1.7× fewer than Llama Guard 3-1B
 
 | Model | Parameters | ToxicChat AUPRC | Latency (p50) |
 |---|---:|---:|---:|
