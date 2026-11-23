@@ -1,0 +1,11 @@
+# Publish only what is listed below: data, weights, results, logs, notebooks and slides stay local.
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/train.py
+!/data/
+/data/*
+!/data/example.jsonl
+!/benchmarks.py
+!/assets/
