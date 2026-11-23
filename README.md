@@ -17,7 +17,7 @@
 
 This repo is the recipe: bring `{"text", "label"}` pairs and a question, run one script, get a decider. It runs on a laptop (Apple Silicon via MLX) or any CUDA GPU.
 
-**Showcase: [SnapGuard-0.8B](https://huggingface.co/AurelPx/SnapGuard-0.8B)**, a safe / unsafe guardrail built with this recipe from Qwen3.5-0.8B. On ToxicChat it beats Llama Guard 7B with ~8× fewer parameters, and on the same laptop it is **8× faster than Llama Guard 2-8B** with a higher AUPRC.
+**Showcase: [SnapGuard-0.8B](https://huggingface.co/AurelPx/SnapGuard-0.8B)**, a safe / unsafe guardrail built with this recipe from Qwen3.5-0.8B. On ToxicChat it gets **2.0× the AUPRC of Llama Guard 3-1B** and runs **7.9× faster than Llama Guard 2-8B** with **9× fewer parameters**.
 
 ## Why a decider?
 
@@ -82,28 +82,23 @@ p_unsafe = out["attaque"]["probabilities"]["true"]      # probability that the m
 
 The question itself lives in [`train.py`](train.py) (`QUESTIONS`): change the instruction text to build any other yes/no decider.
 
-## Showcase: SnapGuard-0.8B on ToxicChat
+## Showcase: SnapGuard-0.8B crushes Llama Guard
 
-[ToxicChat](https://huggingface.co/datasets/lmsys/toxic-chat) (`toxicchat0124`, test split): 5 083 real user prompts, 362 of them toxic. Prompt classification, AUPRC.
+**SnapGuard-0.8B vs Llama Guard**, head to head on the same laptop:
 
-| Model | Parameters | AUPRC |
-|---|---:|---:|
-| **[SnapGuard-0.8B](https://huggingface.co/AurelPx/SnapGuard-0.8B)** (this recipe) | 0.88 B | **0.668** |
-| Llama Guard | 7 B | 0.626 |
-| OpenAI Moderation API | – | 0.588 |
-| Perspective API | – | 0.532 |
+- 🎯 **2.0× the AUPRC of Llama Guard 3-1B** (0.757 vs 0.370), and **+0.21 over Llama Guard 2-8B**
+- ⚡ **7.9× faster than Llama Guard 2-8B**, 1.8× faster than Llama Guard 3-1B: **71 ms** per message
+- 🪶 **9× fewer parameters than Llama Guard 2-8B**, 1.7× fewer than Llama Guard 3-1B
 
-SnapGuard answers one question: *is this message to an AI assistant an attack* (prompt injection, jailbreak, data exfiltration, tool abuse, request for harmful content)? Reference numbers are from the [Llama Guard paper](https://arxiv.org/abs/2312.06674) (Table 2). It was trained on 11 291 labelled messages in 5 languages: 2 epochs, 3 h 24 on a MacBook Pro M4 Pro, about 100 ms per message.
+| Model | Parameters | ToxicChat AUPRC | Latency (p50) |
+|---|---:|---:|---:|
+| **SnapGuard-0.8B** | **0.88 B** | **0.757** | **71 ms** |
+| Llama Guard 3-1B | 1.50 B (1.7× larger) | 0.370 (2.0× lower) | 130 ms (1.8× slower) |
+| Llama Guard 2-8B | 8.03 B (9.1× larger) | 0.546 | 565 ms (7.9× slower) |
 
-### Faster and better than Llama Guard, on the same laptop
+[ToxicChat](https://huggingface.co/datasets/lmsys/toxic-chat) (`toxicchat0124` test): real user prompts, ~7 % toxic. The three models see the same 1 000 prompts (random sample, seed 0), on the same MacBook Pro M4 Pro (MLX, batch size 1, warm models). Latency is the time to a usable verdict: one forward pass for SnapGuard, generating `safe` / `unsafe` for Llama Guard (median over 200 prompts). Llama Guard 3-1B runs in bf16 like SnapGuard, Llama Guard 2-8B in 8-bit. On the full test set (5 083 prompts) SnapGuard scores 0.668, vs 0.626 published for Llama Guard 7B.
 
-| Model (same MacBook Pro M4 Pro) | Parameters | AUPRC* | Latency p50 | |
-|---|---:|---:|---:|---|
-| **SnapGuard-0.8B** | 0.88 B | **0.757** | **71 ms** | one forward pass |
-| Llama Guard 3-1B (bf16) | 1 B | 0.370 | 130 ms | **1.8× slower** |
-| Llama Guard 2-8B (8-bit) | 8 B | 0.546 | 565 ms | **7.9× slower** |
-
-\* Same 1 000 ToxicChat test prompts for every model (random sample, seed 0); SnapGuard scores 0.668 on the full test set. Batch size 1, warm models, MLX. Latency is the time to a usable verdict: one forward pass for SnapGuard, generating `safe` / `unsafe` for Llama Guard (median over 200 prompts). SnapGuard reads at most 512 tokens. Reproduce with `python compare_guards.py --decider models/decider --n 1000`.
+Reproduce: `python compare_guards.py --decider models/decider --n 1000`. SnapGuard answers one question: *is this message to an AI assistant an attack* (prompt injection, jailbreak, data exfiltration, tool abuse, request for harmful content)? It was trained on 11 291 labelled messages in 5 languages: 2 epochs, 3 h 24 on the same MacBook.
 
 ## Tips
 
