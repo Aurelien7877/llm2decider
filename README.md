@@ -103,7 +103,7 @@ SnapGuard answers one question: *is this message to an AI assistant an attack* (
 
 ## Roadmap
 
-- [ ] SnapGuard-0.8B weights on the Hugging Face Hub
+- [x] SnapGuard-0.8B weights on the Hugging Face Hub
 - [ ] More public benchmarks
 - [ ] Larger base model (Qwen3.5-2B) and a shorter instruction
 
