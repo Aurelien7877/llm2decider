@@ -17,7 +17,7 @@
 
 This repo is the recipe: bring `{"text", "label"}` pairs and a question, run one script, get a decider. It runs on a laptop (Apple Silicon via MLX) or any CUDA GPU.
 
-**Showcase: [SnapGuard-0.8B](https://huggingface.co/AurelPx/SnapGuard-0.8B)**, a safe / unsafe guardrail built with this recipe from Qwen3.5-0.8B. It beats Llama Guard 7B on ToxicChat with ~8× fewer parameters.
+**Showcase: [SnapGuard-0.8B](https://huggingface.co/AurelPx/SnapGuard-0.8B)**, a safe / unsafe guardrail built with this recipe from Qwen3.5-0.8B. On ToxicChat it beats Llama Guard 7B with ~8× fewer parameters, and on the same laptop it is **8× faster than Llama Guard 2-8B** with a higher AUPRC.
 
 ## Why a decider?
 
@@ -94,6 +94,16 @@ The question itself lives in [`train.py`](train.py) (`QUESTIONS`): change the in
 | Perspective API | – | 0.532 |
 
 SnapGuard answers one question: *is this message to an AI assistant an attack* (prompt injection, jailbreak, data exfiltration, tool abuse, request for harmful content)? Reference numbers are from the [Llama Guard paper](https://arxiv.org/abs/2312.06674) (Table 2). It was trained on 11 291 labelled messages in 5 languages: 2 epochs, 3 h 24 on a MacBook Pro M4 Pro, about 100 ms per message.
+
+### Faster and better than Llama Guard, on the same laptop
+
+| Model (same MacBook Pro M4 Pro) | Parameters | AUPRC* | Latency p50 | |
+|---|---:|---:|---:|---|
+| **SnapGuard-0.8B** | 0.88 B | **0.757** | **71 ms** | one forward pass |
+| Llama Guard 3-1B (bf16) | 1 B | 0.370 | 130 ms | **1.8× slower** |
+| Llama Guard 2-8B (8-bit) | 8 B | 0.546 | 565 ms | **7.9× slower** |
+
+\* Same 1 000 ToxicChat test prompts for every model (random sample, seed 0); SnapGuard scores 0.668 on the full test set. Batch size 1, warm models, MLX. Latency is the time to a usable verdict: one forward pass for SnapGuard, generating `safe` / `unsafe` for Llama Guard (median over 200 prompts). SnapGuard reads at most 512 tokens. Reproduce with `python compare_guards.py --decider models/decider --n 1000`.
 
 ## Tips
 
